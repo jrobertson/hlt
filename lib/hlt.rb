@@ -13,7 +13,7 @@ class Hlt
     s2 = s.gsub(/\n\[[^\]]+\]\n/, " !CODE\n")
     raw_html = LineTree.new(s2).to_xml
     html = raw_html.gsub('!CODE').with_index do |x,i| 
-      "\n\n" + a[i].lines.map{|x| "%s%s\ % [' ' * 4,x]}.join + "\n"
+      "\n\n" + a[i].lines.map{|x| ' ' * 4 + x}.join + "\n"
     end
     @to_html = Rexle.new(html).xml pretty: true
   end
