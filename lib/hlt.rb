@@ -3,7 +3,6 @@
 # file: hlt.rb
 
 require 'line-tree'
-require 'rexle'
 
 class Hlt
 
