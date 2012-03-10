@@ -31,10 +31,7 @@ output:
     <html lang='en'>
       <head>
         <title></title>
-        <meta charset='utf-8'>
-          <link rel='stylesheet' type='text' href='foo' media='screen'></link>
-          <script type='text' src='123'></script>
-        </meta>
+        <meta charset='utf-8'></meta>
       </head>
       <body>
         <script>
