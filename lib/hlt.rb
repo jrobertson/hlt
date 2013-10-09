@@ -23,7 +23,7 @@ class Hlt
 
     s2 = s.lines.to_a.map!{|line| 
 
-      hash = "(\{[^\}]+\})?"
+      hash = "(\s*\{[^\}]+\})?"
 
       r = line.sub(/^\s+(\w+)?(?:[\.#]\w+){1,}#{hash}/) do |x| 
 
