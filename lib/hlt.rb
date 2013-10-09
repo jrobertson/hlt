@@ -58,7 +58,8 @@ class Hlt
     end
 
     markdown.each.with_index do |x,i|
-      html.sub!(/<markdown:#{i}\/>/, RDiscount.new(x).to_html)
+      html.sub!(/<markdown:#{i}\/>/, RDiscount.new(x).to_html
+        .gsub(/<(\w+)>{style:\s*['"]([^'"]+)[^\}]+\}/,'<\1 style=\'\2\'>'))
     end
 
     @to_html = Rexle.new(html).xml pretty: true
