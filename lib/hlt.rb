@@ -9,7 +9,9 @@ class Hlt
 
   attr_reader :to_html
 
-  def initialize(raw_s)
+  def initialize(raw_s, options={})
+    
+    opt = {pretty: true, declaration: true}.merge(options)
 
     # strip out lines which are blank or only contain a comment
     #s = raw_s.lines.to_a.reject!{|x| x[/(^\s+\#\s)|(^\s*$)/] }
@@ -63,7 +65,7 @@ class Hlt
         .gsub(/<(\w+)>{style:\s*['"]([^'"]+)[^\}]+\}/,'<\1 style=\'\2\'>'))
     end
 
-    @to_html = Rexle.new(html).xml pretty: true
+    @to_html = Rexle.new(html).xml opt
 
   end
 

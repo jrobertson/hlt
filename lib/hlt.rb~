@@ -15,6 +15,7 @@ class Hlt
     #s = raw_s.lines.to_a.reject!{|x| x[/(^\s+\#\s)|(^\s*$)/] }
 
     s, markdown = fetch_markdown raw_s
+
     #s = raw_s
     # strip out the text from the line containing a comment
     s.gsub!(/((^#\s|\s#\s).*)/,'').strip if s[/((^#\s|\s#\s).*)/]
@@ -73,7 +74,7 @@ class Hlt
 
     prev_line = ''
     s = raw_s.lines.map {|line|
-      line = prev_line + "\n" if line == "\n"
+      line = prev_line.to_s + "\n" if line == "\n"
       prev_line = line[/^\s+/]
       line
     }.join
@@ -83,9 +84,11 @@ class Hlt
     markdown = []
 
     s2 = s.lines.map do |line|
-
+      
       if state == :markdown then
+        
         spaces = line[/^\s+/].to_s.length
+        
         if spaces > md_spaces then
           markdown[index] << line[(md_spaces + 2)..-1]
           line = ''
@@ -93,7 +96,18 @@ class Hlt
           markdown[index].strip!
           index += 1
           state = :default
-        end
+          
+          r = line[/^(\s+)markdown:/,1]
+
+          if r then  
+
+            state = :markdown 
+            md_spaces = r.length    
+
+            line.sub!(/markdown:/,'\0' + index.to_s)
+            markdown[index] = ''
+          end
+        end                
 
       else
 
