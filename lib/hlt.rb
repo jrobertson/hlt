@@ -15,6 +15,8 @@ class Hlt
 
     # strip out lines which are blank or only contain a comment
     #s = raw_s.lines.to_a.reject!{|x| x[/(^\s+\#\s)|(^\s*$)/] }
+    
+    raw_s2, xml_list = filter_xml(raw_s)
 
     s, markdown = fetch_markdown raw_s
 
@@ -64,9 +66,53 @@ class Hlt
       html.sub!(/<markdown:#{i}\/>/, RDiscount.new(x).to_html
         .gsub(/<(\w+)>{style:\s*['"]([^'"]+)[^\}]+\}/,'<\1 style=\'\2\'>'))
     end
+    
+    doc = Rexle.new(html)
+    
+    xml_list.each.with_index do |xml,i|
+      e = doc.root.element('//xml:' + i.to_s)
+      e.insert_before Rexle.new(xml).root
+      e.delete
+    end
+    
+    @to_html = doc.xml opt
 
-    @to_html = Rexle.new(html).xml opt
+  end
+  
+  private
+  
+  def filter_xml(s)
+    
+    n = s =~ /</
+    return [s,[]] unless n
+  
+    end_pos = s.length - (s =~ />[^>]+$/)
+    
 
+    i = 0
+    xml = []
+
+    while n do
+
+      a = RexleParser.new(s[n..-(end_pos)]).to_a
+
+      doc = if a[0].length > 3 then
+        Rexle.new(['root', '', {}, *a])
+      else
+        Rexle.new(['root', '', {}, a])
+      end
+
+      s2 = doc.root.element('*').xml
+
+      xml << s2
+      s.sub!(s2, "xml:#{i.to_s}")
+      i += 1
+
+      n = s =~ /</
+    end
+    
+    [s, xml]
+    
   end
 
   def fetch_markdown(raw_s)
