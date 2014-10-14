@@ -15,10 +15,9 @@ class Hlt
 
     # strip out lines which are blank or only contain a comment
     #s = raw_s.lines.to_a.reject!{|x| x[/(^\s+\#\s)|(^\s*$)/] }
-    
-    raw_s2, xml_list = filter_xml(raw_s)
-
-    s, markdown = fetch_markdown raw_s
+        
+    s2, markdown = fetch_markdown raw_s
+    s, xml_list = filter_xml(s2)
 
     #s = raw_s
     # strip out the text from the line containing a comment
