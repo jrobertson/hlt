@@ -29,7 +29,7 @@ class Hlt
 
       hash = "(\s*\{[^\}]+\})?"
 
-      r = line.sub(/^\s+(\w+)?(?:[\.#]\w+){1,}#{hash}/) do |x| 
+      r = line.sub(/^\s*(\w+)?(?:[\.#]\w+){1,}#{hash}/) do |x| 
 
         raw_attrs = x.slice!(/\{.*\}/)
         attrs = raw_attrs[1..-2] if raw_attrs

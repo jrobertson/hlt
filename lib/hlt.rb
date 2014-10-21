@@ -11,7 +11,7 @@ class Hlt
 
   def initialize(raw_s, options={})
     
-    opt = {pretty: true, declaration: true}.merge(options)
+    opt = {pretty: true, declaration: true, style: true}.merge(options)
 
     # strip out lines which are blank or only contain a comment
     #s = raw_s.lines.to_a.reject!{|x| x[/(^\s+\#\s)|(^\s*$)/] }
@@ -73,6 +73,11 @@ class Hlt
       e.insert_before Rexle.new(xml).root
       e.delete
     end
+    
+    if opt[:style] == false then
+      doc.root.xpath('//.[@style]').each {|e| e.attributes.delete :style}
+    end    
+    
     
     @to_html = doc.xml opt
 
