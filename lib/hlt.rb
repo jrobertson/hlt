@@ -75,7 +75,11 @@ class Hlt
     end
     
     if opt[:style] == false then
-      doc.root.xpath('//.[@style]').each {|e| e.attributes.delete :style}
+      doc.root.xpath('//.[@style]').each do |e| 
+        unless e.attributes[:style][/^clear:/] then
+          e.attributes.delete :style 
+        end
+      end
     end    
     
     
