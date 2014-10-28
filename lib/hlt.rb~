@@ -28,6 +28,8 @@ class Hlt
     s2 = s.lines.to_a.map!{|line| 
 
       hash = "(\s*\{[^\}]+\})?"
+                          
+      line.prepend '  '
 
       r = line.sub(/^\s*(\w+)?(?:[\.#]\w+){1,}#{hash}/) do |x| 
 
@@ -52,10 +54,11 @@ class Hlt
       end
 
       r
-    }.join
+    }
+    
+    s2.unshift "root\n"
 
-
-    raw_html = LineTree.new(s2).to_xml
+    raw_html = LineTree.new(s2.join).to_xml
 
     html = raw_html.gsub('!CODE').with_index do |x,i| 
       "\n\n" + a_code[i].lines.map{|x| ' ' * 4 + x}.join + "\n"
@@ -83,7 +86,8 @@ class Hlt
     end    
     
     
-    html = doc.xml opt
+    #html = doc.xml opt
+    html = doc.root.xpath('*'){|x| x.xml opt}.join("\n")
     
     time = Time.now
     timestamp = time.strftime("#{ordinalize(time.day)} %B %Y @ %H:%M")
