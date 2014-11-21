@@ -33,8 +33,10 @@ class Hlt
                           
       line.prepend '  '
 
+      line.sub!(/^(\s*)\w+: /,'\0' + "\n" + '\1')
+                          
       r = line.sub(/^\s*(\w+)?(?:[\.#]\w+){1,}#{hash}/) do |x| 
-
+                          
         raw_attrs = x.slice!(/\{.*\}/)
         attrs = raw_attrs[1..-2] if raw_attrs
 
@@ -42,7 +44,7 @@ class Hlt
         tag = x[/(^\s*\w*)[#\.]/,1] || 'div'
         tag += 'div' if tag.strip.empty?
 
-        x.sub(/(?:\.\w+){1,}/) do |x2|
+        x.sub(/(?:\.\w+){1,}/) do |x2|          
           a = x2[/(?:\.\w+){1,}/].split('.')
           a.shift
           a2 << "class: '%s'" % a.join(' ')

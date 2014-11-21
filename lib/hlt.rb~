@@ -12,9 +12,11 @@ class Hlt
   def initialize(raw_s, options={})
     
     opt = {pretty: true, declaration: true, style: true}.merge(options)
-
+        
     # strip out lines which are blank or only contain a comment
     #s = raw_s.lines.to_a.reject!{|x| x[/(^\s+\#\s)|(^\s*$)/] }
+    
+    raw_s.strip!
         
     s2, markdown = fetch_markdown raw_s
     s, xml_list = filter_xml(s2)
