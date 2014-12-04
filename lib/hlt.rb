@@ -62,7 +62,7 @@ class Hlt
     
     s2.unshift "root\n"
 
-    raw_html = LineTree.new(s2.join).to_xml
+    raw_html = LineTree.new(s2.join, ignore_non_element: false).to_xml
 
     html = raw_html.gsub('!CODE').with_index do |x,i| 
       "\n\n" + a_code[i].lines.map{|x| ' ' * 4 + x}.join + "\n"
