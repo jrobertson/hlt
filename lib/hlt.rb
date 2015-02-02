@@ -120,9 +120,9 @@ class Hlt
       a = RexleParser.new(s[n..-(end_pos)]).to_a
 
       doc = if a[0].length > 3 then
-        Rexle.new(['root', '', {}, *a])
+        Rexle.new(['root', {}, '', *a])
       else
-        Rexle.new(['root', '', {}, a])
+        Rexle.new(['root', {}, '', a])
       end
 
       s2 = doc.root.element('*').xml
