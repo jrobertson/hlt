@@ -7,7 +7,7 @@ require 'rdiscount'
 
 class Hlt
 
-  attr_reader :to_html
+  attr_reader :to_html, :to_doc
 
   def initialize(raw_s, options={})
     
@@ -91,6 +91,7 @@ class Hlt
     
     
     #html = doc.xml opt
+    @to_doc = doc
     html = doc.root.xpath('*'){|x| x.xml opt}.join("\n")
     
     time = Time.now
