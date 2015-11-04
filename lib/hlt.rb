@@ -4,6 +4,7 @@
 
 require 'line-tree'
 require 'rdiscount'
+require 'rexle-builder'
 
 class Hlt
 
@@ -61,8 +62,9 @@ class Hlt
     }
     
     s2.unshift "root\n"
-
-    raw_html = LineTree.new(s2.join, ignore_non_element: false).to_xml
+    s3 = s2.join.gsub(/^(\s*)-\s+/,'\1templatecode ').\
+                                       gsub(/^(\s*)=\s+/,'\1templateoutput ')
+    raw_html = LineTree.new(s3, ignore_non_element: false).to_xml
 
     html = raw_html.gsub('!CODE').with_index do |x,i| 
       "\n\n" + a_code[i].lines.map{|x| ' ' * 4 + x}.join + "\n"
@@ -91,7 +93,7 @@ class Hlt
     
     
     #html = doc.xml opt
-    @to_doc = doc
+    @doc = doc
     html = doc.root.xpath('*'){|x| x.xml opt}.join("\n")
     
     time = Time.now
@@ -101,6 +103,20 @@ class Hlt
     html.sub!(/(?=<\/html>)/, comment)
     @to_html = html
 
+  end
+  
+  def render()
+    
+    s = "xml = RexleBuilder.new\n"
+    s <<  scanbuild(@doc.to_a)
+    a = eval s
+    
+    Rexle.new(a).element('root/.').xml pretty: true
+    
+  end
+  
+  def to_doc()
+    @doc
   end
   
   private
@@ -207,5 +223,37 @@ class Hlt
                %w{ th st nd rd th th th th th th }[n % 10] )
   end
   
+  # under development 04-Nov-2015
+  
+  def scanbuild(x, indent=0)
+
+    name, attributes, *remaining = x
+  
+    children = remaining.shift
+    text = ''
+
+      
+    if children.is_a? Array then
+      nested = scanbuild(children, indent+1) 
+    else
+      text = children
+    end
+
+    pad = '  ' * indent
+    
+    s2 = if children.is_a? Array then
+      "%sxml.%s(%s,%s) do\n%s" % [pad, name, attributes.to_s, text.inspect, nested]
+    else
+      '  ' * indent + "xml.%s(%s,%s)" % [name, attributes.to_s, text.inspect]
+    end
+
+    if remaining.any? and remaining[0].is_a? Array then
+      s2 << "\n" + scanbuild(remaining[0], indent+1) 
+    end
+
+    s2 << "\n%send" % [pad] if children.is_a?(Array)
+
+    s2
+  end
 
 end
