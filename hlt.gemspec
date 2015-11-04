@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'hlt'
-  s.version = '0.5.0'
+  s.version = '0.5.1'
   s.summary = 'Intended for building an HTML page from a kind of a Slim template'
   s.authors = ['James Robertson']
   s.files = Dir['lib/hlt.rb']

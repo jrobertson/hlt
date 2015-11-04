@@ -105,14 +105,19 @@ class Hlt
 
   end
   
-  def render()
-    
+  def render(locals: {})
+
+    variables = locals.map do |key, value|
+      "#{key} = locals['#{key}']"
+    end
+
     s = "xml = RexleBuilder.new\n"
     s <<  scanbuild(@doc.to_a)
-    a = eval s
+
+    a = eval variables.join("\n") + "\n" + s
     
     Rexle.new(a).element('root/.').xml pretty: true
-    
+
   end
   
   def to_doc()
@@ -223,37 +228,59 @@ class Hlt
                %w{ th st nd rd th th th th th th }[n % 10] )
   end
   
-  # under development 04-Nov-2015
   
+  def v(x)
+
+    if x then
+      var = x[/^=\s+(.*)/,1]
+      var ? var : x.inspect
+    end
+    
+  end
+
   def scanbuild(x, indent=0)
 
     name, attributes, *remaining = x
-  
+
     children = remaining.shift
     text = ''
 
       
     if children.is_a? Array then
       nested = scanbuild(children, indent+1) 
-    else
+    elsif children
       text = children
     end
 
     pad = '  ' * indent
-    
+
+
     s2 = if children.is_a? Array then
-      "%sxml.%s(%s,%s) do\n%s" % [pad, name, attributes.to_s, text.inspect, nested]
+      if name == 'templatecode' then
+        "%s%s" % [pad, text]
+      else
+        "%sxml.%s(%s,%s) do\n%s" % \
+                                  [pad, name, attributes.to_s, v(text), nested]
+      end
     else
-      '  ' * indent + "xml.%s(%s,%s)" % [name, attributes.to_s, text.inspect]
+      if name == 'templatecode' then
+        "%s%s" % [pad, text]
+      else
+        '  ' * indent + "xml.%s(%s,%s)" % [name, attributes.to_s, v(text)]
+      end
     end
 
-    if remaining.any? and remaining[0].is_a? Array then
-      s2 << "\n" + scanbuild(remaining[0], indent+1) 
+    while remaining.any? do
+      children = remaining.shift
+      if children and children.is_a? Array then
+        s2 << "\n" + scanbuild(children, indent+1) 
+      end
     end
 
-    s2 << "\n%send" % [pad] if children.is_a?(Array)
+    s2 << "\n%send" % [pad] if children.is_a?(Array) or name == 'templatecode'
 
     s2
   end
+
 
 end
