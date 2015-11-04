@@ -1,9 +1,6 @@
-# What's new in the the Hlt gem version 0.5.0
-
-The Hlt#render method is still under development, however you can see that the Sliml template can now include code statements prefixed by a dash (-) symbol. Although the code statements currently cannot be executed they are at least identified as code statements in the intermediate output.
+# What's new in the Hlt gem version 0.5.1
 
     require 'hlt'
-
 
     s =<<S
     html {lang: 'en'}
@@ -11,17 +8,26 @@ The Hlt#render method is still under development, however you can see that the S
         title Testing 1 2 3
         meta {charset: 'utf-8'}
       body
-        table
-        - for item in bank['transactions'] do
-          tr
-            - for field in item
-              td = field
+        table {border: '1'}
+          thead
+            th Date
+            th Type
+            th Name
+            th Credit
+            th Debit
+            th Balance
+          - for item in bank['transactions'] do
+            tr
+              - for field in item
+                td = field
 
     S
 
     hlt = Hlt.new(s)
-    puts hlt.render
 
+    h = {"bank"=>{"balance"=>" - ", "transactions"=>[["22 Oct 2014", "POS", "5487 22OCT45 , W P SMITHS PLC , EDINBURGH GB", " - ", "0.89", "£225.43"], ["25 Oct 2014", "D/D", "JAFFACAKESDIRECT", " - ", "12.00", "£213.43"], ["1 Nov 2014", "D/D", "EDINBURGH SPORTS", " - ", "8.00", "£205.43"], ["2 Nov 2014", "BAC", "PAYPAL", "12.80", " - ", " - "]]}}
+
+    puts hlt.render locals: h
 
 Output:
 
@@ -32,12 +38,48 @@ Output:
     &lt;meta charset='utf-8'/&gt;
   &lt;/head&gt;
   &lt;body&gt;
-    &lt;table/&gt;
-    &lt;templatecode&gt;for item in bank['transactions'] do&lt;/templatecode&gt;
-    &lt;tr&gt;
-      &lt;templatecode&gt;for field in item&lt;/templatecode&gt;
-      &lt;td&gt;= field&lt;/td&gt;
-    &lt;/tr&gt;
+    &lt;table border='1'&gt;
+      &lt;thead&gt;
+        &lt;th&gt;Date&lt;/th&gt;
+        &lt;th&gt;Type&lt;/th&gt;
+        &lt;th&gt;Name&lt;/th&gt;
+        &lt;th&gt;Credit&lt;/th&gt;
+        &lt;th&gt;Debit&lt;/th&gt;
+        &lt;th&gt;Balance&lt;/th&gt;
+      &lt;/thead&gt;
+      &lt;tr&gt;
+        &lt;td&gt;22 Oct 2014&lt;/td&gt;
+        &lt;td&gt;POS&lt;/td&gt;
+        &lt;td&gt;5487 22OCT45 , W P SMITHS PLC , EDINBURGH GB&lt;/td&gt;
+        &lt;td&gt; - &lt;/td&gt;
+        &lt;td&gt;0.89&lt;/td&gt;
+        &lt;td&gt;£225.43&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;25 Oct 2014&lt;/td&gt;
+        &lt;td&gt;D/D&lt;/td&gt;
+        &lt;td&gt;JAFFACAKESDIRECT&lt;/td&gt;
+        &lt;td&gt; - &lt;/td&gt;
+        &lt;td&gt;12.00&lt;/td&gt;
+        &lt;td&gt;£213.43&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;1 Nov 2014&lt;/td&gt;
+        &lt;td&gt;D/D&lt;/td&gt;
+        &lt;td&gt;EDINBURGH SPORTS&lt;/td&gt;
+        &lt;td&gt; - &lt;/td&gt;
+        &lt;td&gt;8.00&lt;/td&gt;
+        &lt;td&gt;£205.43&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;2 Nov 2014&lt;/td&gt;
+        &lt;td&gt;BAC&lt;/td&gt;
+        &lt;td&gt;PAYPAL&lt;/td&gt;
+        &lt;td&gt;12.80&lt;/td&gt;
+        &lt;td&gt; - &lt;/td&gt;
+        &lt;td&gt; - &lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/table&gt;
   &lt;/body&gt;
 &lt;/html&gt;
 </pre>
