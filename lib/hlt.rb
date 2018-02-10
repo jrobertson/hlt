@@ -2,9 +2,10 @@
 
 # file: hlt.rb
 
+require 'kramdown'
 require 'line-tree'
-require 'rdiscount'
 require 'rexle-builder'
+
 
 class Hlt
 
@@ -64,6 +65,7 @@ class Hlt
     s2.unshift "root\n"
     s3 = s2.join.gsub(/^(\s*)-\s+/,'\1templatecode ').\
                                        gsub(/^(\s*)=\s+/,'\1templateoutput ')
+
     raw_html = LineTree.new(s3, ignore_non_element: false).to_xml
 
     html = raw_html.gsub('!CODE').with_index do |x,i| 
@@ -71,7 +73,7 @@ class Hlt
     end
 
     markdown.each.with_index do |x,i|
-      html.sub!(/<markdown:#{i}\/>/, RDiscount.new(x).to_html
+      html.sub!(/<markdown:#{i.to_s}\/>/, Kramdown::Document.new(x).to_html
         .gsub(/<(\w+)>{style:\s*['"]([^'"]+)[^\}]+\}/,'<\1 style=\'\2\'>'))
     end
     
@@ -116,7 +118,7 @@ class Hlt
 
     a = eval variables.join("\n") + "\n" + s
     
-    Rexle.new(a).element('root/.').xml pretty: true
+    Rexle.new(a).element('root/.')
 
   end
   
@@ -177,7 +179,7 @@ class Hlt
     markdown = []
 
     s2 = s.lines.map do |line|
-      
+            
       if state == :markdown then
         
         spaces = line[/^\s+/].to_s.length
@@ -210,8 +212,8 @@ class Hlt
 
           state = :markdown 
           md_spaces = r.length    
-
           line.sub!(/markdown:/,'\0' + index.to_s)
+
           markdown[index] = ''
         end
       end
