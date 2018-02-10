@@ -2,7 +2,7 @@
 
 # file: hlt.rb
 
-require 'kramdown'
+require 'martile'
 require 'line-tree'
 require 'rexle-builder'
 
@@ -11,16 +11,16 @@ class Hlt
 
   attr_reader :to_html, :to_doc
 
-  def initialize(raw_s, options={})
+  def initialize(raw_s, pretty: true, declaration: true, style: true, 
+                 debug: false)
     
-    opt = {pretty: true, declaration: true, style: true}.merge(options)
         
     # strip out lines which are blank or only contain a comment
     #s = raw_s.lines.to_a.reject!{|x| x[/(^\s+\#\s)|(^\s*$)/] }
     
     raw_s.strip!
         
-    s2, markdown = fetch_markdown raw_s
+    s2, martile = fetch_martile raw_s
     s, xml_list = filter_xml(s2)
 
     #s = raw_s
@@ -72,10 +72,21 @@ class Hlt
       "\n\n" + a_code[i].lines.map{|x| ' ' * 4 + x}.join + "\n"
     end
 
-    markdown.each.with_index do |x,i|
-      html.sub!(/<markdown:#{i.to_s}\/>/, Kramdown::Document.new(x).to_html
-        .gsub(/<(\w+)>{style:\s*['"]([^'"]+)[^\}]+\}/,'<\1 style=\'\2\'>'))
+    martile.each.with_index do |x,i|
+      
+      if @debug then
+        puts 'i: ' + i.inspect
+        puts 'x: ' + x.inspect
+        puts 'html: ' + html.inspect
+      end
+      
+      html.sub!(/<mar(tile|kdown):#{i.to_s}\/>/, RDiscount.new(\
+                  Martile.new(x).to_s).to_html\
+            .gsub(/<(\w+)>\s*{style:\s*['"]([^'"]+)[^\}]+\}/,\
+                  '<\1 style=\'\2\'>'))
     end
+    
+    puts 'html_: ' + html.inspect if @debug
     
     doc = Rexle.new(html)
     
@@ -85,7 +96,9 @@ class Hlt
       e.delete
     end
     
-    if opt[:style] == false then
+    # remove the style attributes from the document if style == false
+    #
+    if style == false then
       doc.root.xpath('//.[@style]').each do |e| 
         unless e.attributes[:style][/^clear:/] then
           e.attributes.delete :style 
@@ -94,9 +107,9 @@ class Hlt
     end    
     
     
-    #html = doc.xml opt
     @doc = doc
-    html = doc.root.xpath('*'){|x| x.xml opt}.join("\n")
+    h = {declaration: declaration, pretty: pretty, style: style}
+    html = doc.root.xpath('*'){|x| x.xml(h)}.join("\n")
     
     time = Time.now
     timestamp = time.strftime("#{ordinalize(time.day)} %B %Y @ %H:%M")
@@ -162,9 +175,9 @@ class Hlt
     
   end
 
-  def fetch_markdown(raw_s)
+  def fetch_martile(raw_s)
 
-    # any lines which are in the context of markdown which only contain
+    # any lines which are in the context of martile which only contain
     # a new line character will have spaces inserted into them
 
     prev_line = ''
@@ -176,53 +189,56 @@ class Hlt
 
     index, spaces, md_spaces = 0, 0, 0
     state = :default
-    markdown = []
+    martile = []
 
     s2 = s.lines.map do |line|
-            
-      if state == :markdown then
+      
+      puts 'line: ' + line.inspect if @debug
+      
+      if state == :martile then
         
         spaces = line[/^\s+/].to_s.length
         
         if spaces > md_spaces then
-          markdown[index] << line[(md_spaces + 2)..-1]
+          martile[index] << line[(md_spaces + 2)..-1]
           line = ''
         else
-          markdown[index].strip!
+          martile[index].strip!
           index += 1
           state = :default
           
-          r = line[/^(\s+)markdown:/,1]
+          r = line[/^(\s+)martile:/,1]
 
           if r then  
 
-            state = :markdown 
+            state = :martile 
             md_spaces = r.length    
 
-            line.sub!(/markdown:/,'\0' + index.to_s)
-            markdown[index] = ''
+            line.sub!(/mar(kdown|tile):/,'\0' + index.to_s)
+            martile[index] = ''
           end
         end                
 
       else
 
-        r = line[/^(\s+)markdown:/,1]
+        r = line[/^(\s+)mar(kdown|tile):/,1]
 
         if r then  
 
-          state = :markdown 
+          state = :martile 
           md_spaces = r.length    
-          line.sub!(/markdown:/,'\0' + index.to_s)
+          line.sub!(/mar(kdown|tile):/,'\0' + index.to_s)
 
-          markdown[index] = ''
+          martile[index] = ''
         end
       end
 
+      puts 'line: ' + line.inspect
       line
 
     end
 
-    [s2.join, markdown]
+    [s2.join, martile]
   end
   
   def ordinalize(n)
