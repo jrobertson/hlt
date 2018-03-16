@@ -14,20 +14,24 @@ class Hlt
   def initialize(raw_s, pretty: true, declaration: true, style: true, 
                  debug: false)
     
-        
+    
+    @debug = debug
     # strip out lines which are blank or only contain a comment
     #s = raw_s.lines.to_a.reject!{|x| x[/(^\s+\#\s)|(^\s*$)/] }
     
     raw_s.strip!
         
     s2, martile = fetch_martile raw_s
+    puts 'martile: ' + martile.inspect if @debug
     s, xml_list = filter_xml(s2)
 
     #s = raw_s
     # strip out the text from the line containing a comment
     s.gsub!(/((^#\s|\s#\s).*)/,'').strip if s[/((^#\s|\s#\s).*)/]
-    a_code = s.scan(/^\[([^\]]+)\]\n/).map(&:first)
-    s.gsub!(/\n\[[^\]]+\]\n/, " !CODE\n")
+    puts 's: ' + s.inspect if @debug
+    a_code = s.scan(/^\[([^\]]+)\]\B/).map(&:first)
+    puts 'a_code: ' + a_code.inspect if @debug
+    s.gsub!(/\n\[[^\]]+\]\B/, " !CODE\n")
 
     s2 = s.lines.to_a.map!{|line| 
 
@@ -66,7 +70,10 @@ class Hlt
     s3 = s2.join.gsub(/^(\s*)-\s+/,'\1templatecode ').\
                                        gsub(/^(\s*)=\s+/,'\1templateoutput ')
 
-    raw_html = LineTree.new(s3, ignore_non_element: false).to_xml
+    puts 's3: ' + s3.inspect if @debug
+    
+    raw_html = LineTree.new(*s3, ignore_non_element: false, debug: debug).to_xml
+    puts 'raw_html: ' + raw_html.inspect if @debug
 
     html = raw_html.gsub('!CODE').with_index do |x,i| 
       "\n\n" + a_code[i].lines.map{|x| ' ' * 4 + x}.join + "\n"
@@ -233,7 +240,7 @@ class Hlt
         end
       end
 
-      puts 'line: ' + line.inspect
+      puts 'line: ' + line.inspect if @debug
       line
 
     end
