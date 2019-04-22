@@ -2,12 +2,13 @@
 
 # file: hlt.rb
 
+
 require 'martile'
-require 'line-tree'
 require 'rexle-builder'
 
 
 class Hlt
+  using ColouredText
 
   attr_reader :to_html, :to_doc
 
@@ -28,9 +29,9 @@ class Hlt
     #s = raw_s
     # strip out the text from the line containing a comment
     s.gsub!(/((^#\s|\s#\s).*)/,'').strip if s[/((^#\s|\s#\s).*)/]
-    puts 's: ' + s.inspect if @debug
+    puts ('s: ' + s.inspect).debug if @debug
     a_code = s.scan(/^\[([^\]]+)\]\B/).map(&:first)
-    puts 'a_code: ' + a_code.inspect if @debug
+    puts ('a_code: ' + a_code.inspect).debug if @debug
     s.gsub!(/\n\[[^\]]+\]\B/, " !CODE\n")
 
     s2 = s.lines.to_a.map!{|line| 
@@ -70,10 +71,10 @@ class Hlt
     s3 = s2.join.gsub(/^(\s*)-\s+/,'\1templatecode ').\
                                        gsub(/^(\s*)=\s+/,'\1templateoutput ')
 
-    puts 's3: ' + s3.inspect if @debug
+    puts ('s3: ' + s3.inspect).debug if @debug
     
     raw_html = LineTree.new(*s3, ignore_non_element: false, debug: debug).to_xml
-    puts 'raw_html: ' + raw_html.inspect if @debug
+    puts ('raw_html: ' + raw_html.inspect).debug if @debug
 
     html = raw_html.gsub('!CODE').with_index do |x,i| 
       "\n\n" + a_code[i].lines.map{|x| ' ' * 4 + x}.join + "\n"
@@ -82,9 +83,9 @@ class Hlt
     martile.each.with_index do |x,i|
       
       if @debug then
-        puts 'i: ' + i.inspect
-        puts 'x: ' + x.inspect
-        puts 'html: ' + html.inspect
+        puts ('i: ' + i.inspect).debug
+        puts ('x: ' + x.inspect).debug
+        puts ('html: ' + html.inspect).debug
       end
       
       html.sub!(/<mar(tile|kdown):#{i.to_s}\/>/, RDiscount.new(\
@@ -93,7 +94,7 @@ class Hlt
                   '<\1 style=\'\2\'>'))
     end
     
-    puts 'html_: ' + html.inspect if @debug
+    puts ('html_: ' + html.inspect).debug if @debug
     
     doc = Rexle.new(html)
     
@@ -200,7 +201,7 @@ class Hlt
 
     s2 = s.lines.map do |line|
       
-      puts 'line: ' + line.inspect if @debug
+      puts ('line: ' + line.inspect).debug if @debug
       
       if state == :martile then
         
@@ -240,7 +241,7 @@ class Hlt
         end
       end
 
-      puts 'line: ' + line.inspect if @debug
+      puts ('line: ' + line.inspect).debug if @debug
       line
 
     end
